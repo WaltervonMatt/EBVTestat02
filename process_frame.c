@@ -72,7 +72,7 @@ void ProcessFrame(uint8 *pInputImg)
 			M1 += Hist[i2] * i2;
 		}
 
-		//W1 und M1 berechnen
+		//Berechnung anwenden
 		temp  = (M0 / W0 - M1 / W1) * (M0 / W0 - M1 / W1);
 		sigma = W0 * W1 * temp;
 

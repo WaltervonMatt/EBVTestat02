@@ -27,6 +27,65 @@ void ProcessFrame(uint8 *pInputImg)
 	struct OSC_PICTURE Pic1, Pic2;//we require these structures to use Oscar functions
 	struct OSC_VIS_REGIONS ImgRegions;//these contain the foreground objects
 
+	// ----------------- Automatische Schwellwerterkennung Aufgabe 2 Testat 2----------------------------
+
+	// Variablendeklaration
+	uint32 Hist[256];
+	uint8 * p 	= data.u8TempImage[GRAYSCALE];
+	int32 	i1 	= 0;
+	int32   i2  = 0;
+	int32   k  	= 0;
+	uint32 	W0 	= 0;
+	uint32 	W1 	= 0;
+	uint32 	M0 	= 0;
+	uint32 	M1 	= 0;
+	float  temp  = 0;
+	float  sigma = 0;
+	float  sigmaMAX = 0;
+	uint8  KMAX		= 0;
+
+	memset(Hist, 0, sizeof(Hist));
+
+	// Grauwerthistogramm bestimmung
+	for(i1 = 0; i1 < siz; i1++)
+	{
+		Hist[p[i1]] += 1;
+	}
+
+	// Algorithmus nach Otsu
+	for(k = 0; k < 255; k++)
+	{
+		W0 = 0;
+		W1 = 0;
+
+		// W0 und M0 berechnen
+		for(i2 = 0; i2 <= (k); i2++)
+		{
+			W0 += Hist[i2];
+			M0 += Hist[i2] * i2;
+		}
+
+		// W1 und M1 berechnen
+		for(i2 = k+1; i2 < 255; i2++)
+		{
+			W1 += Hist[i2];
+			M1 += Hist[i2] * i2;
+		}
+
+		//W1 und M1 berechnen
+		temp  = (M0 / W0 - M1 / W1) * (M0 / W0 - M1 / W1);
+		sigma = W0 * W1 * temp;
+
+		if (sigma > sigmaMAX)
+			{
+				sigmaMAX = sigma;
+				KMAX     = k;
+			}
+	}
+
+	/* Threshold übernehmen
+	data.ipc.state.nThreshold = KMAX; */
+
 	if(data.ipc.state.nStepCounter == 1)
 	{
 		/* this is the first time we call this function */
@@ -37,15 +96,16 @@ void ProcessFrame(uint8 *pInputImg)
 	}
 	else
 	{
-		/* this is the default case */
+		//----------------- Manuelle Schwellwerterkennung Aufgabe 1 Testat 2----------------------------
 		for(r = 0; r < siz; r+= nc)/* we strongly rely on the fact that them images have the same size */
 		{
 			for(c = 0; c < nc; c++)
 			{
-				/* first determine the foreground estimate */
-				data.u8TempImage[THRESHOLD][r+c] =  data.u8TempImage[GRAYSCALE][r+c] > data.ipc.state.nThreshold ? 0 : 0xff;
+				// first determine the foreground estimate
+				data.u8TempImage[THRESHOLD][r+c] =  data.u8TempImage[GRAYSCALE][r+c] > KMAX ? 0 : 0xff;
 			}
 		}
+
 
 		/*
 		{

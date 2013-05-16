@@ -83,9 +83,6 @@ void ProcessFrame(uint8 *pInputImg)
 			}
 	}
 
-	/* Threshold übernehmen
-	data.ipc.state.nThreshold = KMAX; */
-
 	if(data.ipc.state.nStepCounter == 1)
 	{
 		/* this is the first time we call this function */
